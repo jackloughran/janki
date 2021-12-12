@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"os"
+	"time"
 
 	// sqlite
 	_ "github.com/mattn/go-sqlite3"
@@ -19,12 +20,15 @@ func InitializeDB() {
 	}
 
 	// create the data/db.sqlite file if it doesn't exist
-	file, err := os.Create("data/db.sqlite")
-	if err != nil {
-		panic(err)
+	if _, err := os.Stat("./data/db.sqlite"); os.IsNotExist(err) {
+		file, err := os.Create("data/db.sqlite")
+		if err != nil {
+			panic(err)
+		}
+		file.Close()
 	}
-	file.Close()
 
+	var err error
 	// open db at data/db.sqlite
 	db, err = sql.Open("sqlite3", "data/db.sqlite")
 	if err != nil {
@@ -52,6 +56,7 @@ func CardsToReview() []janki.Card {
 		SELECT id, front, back, repititions, next_repitition
 		FROM cards
 		WHERE next_repitition < datetime('now')
+		ORDER BY next_repitition ASC
 	`)
 	if err != nil {
 		panic(err)
@@ -69,4 +74,18 @@ func CardsToReview() []janki.Card {
 	}
 
 	return cards
+}
+
+// CreateCard creates a new card in the database
+func CreateCard(front, back string) error {
+	// insert the card into the database
+	_, err := db.Exec(`
+		INSERT INTO cards (front, back, repititions, next_repitition)
+		VALUES (?, ?, ?, ?)
+	`, front, back, 0, time.Now())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

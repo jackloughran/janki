@@ -4,15 +4,25 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/assets/pico.classless.min.css" />
     <title>Review | Janki</title>
   </head>
   <body>
-    <h1>Review</h1>
+    <main>
+      <h1>Review (<a href="/create">Create</a>)</h1>
 
-    {{if not .}}
-    <h2>No Cards</h2>
-    {{else}}
-    <h2>{{index . 0 .Front}}</h2>
-    {{end}}
+      {{if not .Cards}}
+      <h2>No Cards</h2>
+      {{else}}
+      <h5>Front:</h5>
+      <h2>{{(index .Cards 0).Front}}</h2>
+
+      {{if .Flipped}}
+      <h5>Back:</h5>
+      <p>{{(index .Cards 0).Back}}</p>
+      {{else}}
+      <h3><a href="/?flipped=true">Flip</a></h3>
+      {{end}} {{end}}
+    </main>
   </body>
 </html>
