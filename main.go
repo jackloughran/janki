@@ -2,10 +2,12 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 	"text/template"
 
 	"github.com/jackloughran/janki/db"
 	"github.com/jackloughran/janki/janki"
+	"github.com/jackloughran/janki/supermemo"
 )
 
 func main() {
@@ -47,6 +49,21 @@ func reviewHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// if quality query param is passed, update the card
+	if quality := r.URL.Query().Get("quality"); quality != "" {
+		// convert quality to int
+		qualityInt, err := strconv.Atoi(quality)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		newCard := supermemo.AdjustCard(card, qualityInt)
+		db.UpdateCard(newCard)
+
+		// redirect to the next card
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 
 	// flipped is true if the ?flipped=true query parameter is present

@@ -41,6 +41,7 @@ func InitializeDB() {
 			id INTEGER PRIMARY KEY,
 			front TEXT,
 			back TEXT,
+			efficiency_factor FLOAT,
 			repititions INTEGER,
 			next_repitition DATETIME
 		)
@@ -53,7 +54,7 @@ func InitializeDB() {
 func CardsToReview() []janki.Card {
 	// get all cards where next_repitition is before now
 	rows, err := db.Query(`
-		SELECT id, front, back, repititions, next_repitition
+		SELECT id, front, back, efficiency_factor, repititions, next_repitition
 		FROM cards
 		WHERE next_repitition < datetime('now')
 		ORDER BY next_repitition ASC
@@ -66,7 +67,7 @@ func CardsToReview() []janki.Card {
 	cards := []janki.Card{}
 	for rows.Next() {
 		var card janki.Card
-		err := rows.Scan(&card.ID, &card.Front, &card.Back, &card.Repititions, &card.NextRepitition)
+		err := rows.Scan(&card.ID, &card.Front, &card.Back, &card.EfficiencyFactor, &card.Repititions, &card.NextRepitition)
 		if err != nil {
 			panic(err)
 		}
@@ -80,10 +81,10 @@ func CardsToReview() []janki.Card {
 func GetCard(id string) (janki.Card, error) {
 	var card janki.Card
 	err := db.QueryRow(`
-		SELECT id, front, back, repititions, next_repitition
+		SELECT id, front, back, efficiency_factor, repititions, next_repitition
 		FROM cards
 		WHERE id = ?
-	`, id).Scan(&card.ID, &card.Front, &card.Back, &card.Repititions, &card.NextRepitition)
+	`, id).Scan(&card.ID, &card.Front, &card.Back, &card.EfficiencyFactor, &card.Repititions, &card.NextRepitition)
 	if err != nil {
 		return card, err
 	}
@@ -95,9 +96,25 @@ func GetCard(id string) (janki.Card, error) {
 func CreateCard(front, back string) error {
 	// insert the card into the database
 	_, err := db.Exec(`
-		INSERT INTO cards (front, back, repititions, next_repitition)
-		VALUES (?, ?, ?, ?)
-	`, front, back, 0, time.Now())
+		INSERT INTO cards (front, back, efficiency_factor, repititions, next_repitition)
+		VALUES (?, ?, ?, ?, ?)
+	`, front, back, 2.5, 0, time.Now())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateCard updates the card in the database
+func UpdateCard(card janki.Card) error {
+
+	// update the card in the database
+	_, err := db.Exec(`
+		UPDATE cards
+		SET front = ?, back = ?, efficiency_factor = ?, repititions = ?, next_repitition = ?
+		WHERE id = ?
+	`, card.Front, card.Back, card.EfficiencyFactor, card.Repititions, card.NextRepitition, card.ID)
 	if err != nil {
 		return err
 	}

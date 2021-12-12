@@ -17,6 +17,30 @@
       {{if .Flipped}}
       <h5>Back:</h5>
       <p>{{.Card.Back}}</p>
+      <ul>
+        <li><a href="/review/{{.Card.ID}}?quality=5">perfect response</a></li>
+        <li>
+          <a href="/review/{{.Card.ID}}?quality=4"
+            >correct response after a hesitation</a
+          >
+        </li>
+        <li>
+          <a href="/review/{{.Card.ID}}?quality=3"
+            >correct response recalled with serious difficulty</a
+          >
+        </li>
+        <li>
+          <a href="/review/{{.Card.ID}}?quality=2"
+            >incorrect response; where the correct one seemed easy to recall</a
+          >
+        </li>
+        <li>
+          <a href="/review/{{.Card.ID}}?quality=1"
+            >incorrect response; the correct one remembered</a
+          >
+        </li>
+        <li><a href="/review/{{.Card.ID}}?quality=0">complete blackout</a></li>
+      </ul>
       {{else}}
       <h3><a href="/review/{{.Card.ID}}?flipped=true">Flip</a></h3>
       {{end}}
