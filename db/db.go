@@ -76,6 +76,21 @@ func CardsToReview() []janki.Card {
 	return cards
 }
 
+// GetCard gets a card from the database
+func GetCard(id string) (janki.Card, error) {
+	var card janki.Card
+	err := db.QueryRow(`
+		SELECT id, front, back, repititions, next_repitition
+		FROM cards
+		WHERE id = ?
+	`, id).Scan(&card.ID, &card.Front, &card.Back, &card.Repititions, &card.NextRepitition)
+	if err != nil {
+		return card, err
+	}
+
+	return card, nil
+}
+
 // CreateCard creates a new card in the database
 func CreateCard(front, back string) error {
 	// insert the card into the database

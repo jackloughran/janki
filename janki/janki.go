@@ -4,7 +4,7 @@ import "time"
 
 // Card represents a flashcard
 type Card struct {
-	ID             int64
+	ID             string
 	Front          string
 	Back           string
 	Repititions    int

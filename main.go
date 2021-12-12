@@ -11,27 +11,49 @@ import (
 func main() {
 	db.InitializeDB()
 
-	http.HandleFunc("/", reviewHandler)
+	http.HandleFunc("/", nextReviewHandler)
 	http.HandleFunc("/assets/", assetsHandler)
 	http.HandleFunc("/create", createHandler)
+	http.HandleFunc("/review/", reviewHandler)
 
 	// start a web server on port 1234
 	http.ListenAndServe(":1234", nil)
 }
 
+func nextReviewHandler(w http.ResponseWriter, r *http.Request) {
+	cardsToReview := db.CardsToReview()
+
+	if len(cardsToReview) > 0 {
+		http.Redirect(w, r, "/review/"+string(cardsToReview[0].ID), http.StatusFound)
+		return
+	}
+
+	// render the review template and send it cardsToReview
+	renderTemplate(w, "nocards", nil)
+}
+
 type reviewData struct {
-	Cards   []janki.Card
+	Card    janki.Card
 	Flipped bool
 }
 
+// reviewHandler handles reviewing a single card
 func reviewHandler(w http.ResponseWriter, r *http.Request) {
-	cardsToReview := db.CardsToReview()
+	// get the card ID from the URL
+	cardID := r.URL.Path[len("/review/"):]
+
+	// get the card from the database
+	card, err := db.GetCard(cardID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// flipped is true if the ?flipped=true query parameter is present
 	flipped := r.URL.Query().Get("flipped") == "true"
 
-	// render the review template and send it cardsToReview
-	renderTemplate(w, "review", reviewData{cardsToReview, flipped})
+	// render the review template and send it the card
+	renderTemplate(w, "review", reviewData{card, flipped})
 }
 
 // createHandler renders the create template if it's a GET request, and creates a card if it's a POST request

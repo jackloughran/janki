@@ -11,15 +11,7 @@
     <main>
       <h1>Review (<a href="/create">Create</a>)</h1>
 
-      <h5>Front:</h5>
-      <h2>{{.Card.Front}}</h2>
-
-      {{if .Flipped}}
-      <h5>Back:</h5>
-      <p>{{.Card.Back}}</p>
-      {{else}}
-      <h3><a href="/review/{{.Card.ID}}?flipped=true">Flip</a></h3>
-      {{end}}
+      <h2>No Cards</h2>
     </main>
   </body>
 </html>
