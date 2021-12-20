@@ -2,8 +2,10 @@ package main
 
 import (
 	"net/http"
+	"os/exec"
 	"strconv"
 	"text/template"
+	"time"
 
 	"github.com/jackloughran/janki/db"
 	"github.com/jackloughran/janki/janki"
@@ -17,6 +19,17 @@ func main() {
 	http.HandleFunc("/assets/", assetsHandler)
 	http.HandleFunc("/create", createHandler)
 	http.HandleFunc("/review/", reviewHandler)
+	http.HandleFunc("/edit", editHandler)
+
+	go func() {
+		time.Sleep(3 * time.Second)
+
+		err := exec.Command("open", "http://localhost:1234").Start()
+
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	// start a web server on port 1234
 	http.ListenAndServe(":1234", nil)
@@ -88,6 +101,30 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 
 		// redirect to the create page to have another go
 		http.Redirect(w, r, "/create", http.StatusFound)
+	}
+}
+
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		cards, err := db.GetAllCards()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		renderTemplate(w, "edit", cards)
+	} else {
+		err := db.UpdateCard(janki.Card{
+			ID:    r.FormValue("id"),
+			Front: r.FormValue("front"),
+			Back:  r.FormValue("back"),
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/edit", http.StatusFound)
 	}
 }
 

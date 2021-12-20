@@ -92,6 +92,32 @@ func GetCard(id string) (janki.Card, error) {
 	return card, nil
 }
 
+// GetAllCards returns all the cards in the db
+func GetAllCards() ([]janki.Card, error) {
+	rows, err := db.Query(`
+	SELECT id, front, back, efficiency_factor, repititions, next_repitition
+	FROM cards
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var cards []janki.Card
+	for rows.Next() {
+		var card janki.Card
+		if err = rows.Scan(&card.ID, &card.Front, &card.Back, &card.EfficiencyFactor, &card.Repititions, &card.NextRepitition); err != nil {
+			return nil, err
+		}
+		cards = append(cards, card)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return cards, nil
+}
+
 // CreateCard creates a new card in the database
 func CreateCard(front, back string) error {
 	// insert the card into the database
@@ -112,9 +138,9 @@ func UpdateCard(card janki.Card) error {
 	// update the card in the database
 	_, err := db.Exec(`
 		UPDATE cards
-		SET front = ?, back = ?, efficiency_factor = ?, repititions = ?, next_repitition = ?
+		SET front = ?, back = ?
 		WHERE id = ?
-	`, card.Front, card.Back, card.EfficiencyFactor, card.Repititions, card.NextRepitition, card.ID)
+	`, card.Front, card.Back, card.ID)
 	if err != nil {
 		return err
 	}
