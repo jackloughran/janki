@@ -138,9 +138,9 @@ func UpdateCard(card janki.Card) error {
 	// update the card in the database
 	_, err := db.Exec(`
 		UPDATE cards
-		SET front = ?, back = ?
+		SET front = ?, back = ?, efficiency_factor = ?, repititions = ?, next_repitition = ?
 		WHERE id = ?
-	`, card.Front, card.Back, card.ID)
+	`, card.Front, card.Back, card.EfficiencyFactor, card.Repititions, card.NextRepitition, card.ID)
 	if err != nil {
 		return err
 	}

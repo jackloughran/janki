@@ -114,11 +114,16 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 
 		renderTemplate(w, "edit", cards)
 	} else {
-		err := db.UpdateCard(janki.Card{
-			ID:    r.FormValue("id"),
-			Front: r.FormValue("front"),
-			Back:  r.FormValue("back"),
-		})
+		card, err := db.GetCard(r.FormValue("id"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		card.Front = r.FormValue("front")
+		card.Back = r.FormValue("back")
+
+		err = db.UpdateCard(card)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
