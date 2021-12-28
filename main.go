@@ -1,10 +1,10 @@
 package main
 
 import (
+	"html/template"
 	"net/http"
 	"os/exec"
 	"strconv"
-	"text/template"
 	"time"
 
 	"github.com/jackloughran/janki/db"
